@@ -161,3 +161,72 @@ $('world').addEventListener('click', function (e) {
   const btn = e.target.closest('.seat');
   if (btn) inspect(btn.dataset.id);
 });
+
+
+
+const viewport = $('viewport');
+const view = { scale: 1, x: 0, y: 0 };  
+const MIN_SCALE = 0.3;                   
+const MAX_SCALE = 3;                     
+const MOVE_STEP = 80;                    
+
+function applyView() {
+  $('world').style.transform =
+    'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.scale + ')';
+}
+
+function clampView() {
+  const margin = 80;
+  const w = VENUE.width * view.scale;
+  const h = VENUE.height * view.scale;
+  view.x = Math.min(viewport.clientWidth - margin, Math.max(margin - w, view.x));
+  view.y = Math.min(viewport.clientHeight - margin, Math.max(margin - h, view.y));
+}
+
+function zoomBy(factor) {
+  const cx = viewport.clientWidth / 2;
+  const cy = viewport.clientHeight / 2;
+  const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, view.scale * factor));
+  const k = newScale / view.scale;
+
+  view.x = cx - (cx - view.x) * k;
+  view.y = cy - (cy - view.y) * k;
+  view.scale = newScale;
+
+  clampView();
+  applyView();
+}
+
+function moveBy(dx, dy) {
+  view.x += dx;
+  view.y += dy;
+  clampView();
+  applyView();
+}
+
+function resetView() {
+  view.scale = Math.min(
+    viewport.clientWidth / VENUE.width,
+    viewport.clientHeight / VENUE.height,
+    1
+  );
+  view.x = (viewport.clientWidth - VENUE.width * view.scale) / 2;
+  view.y = (viewport.clientHeight - VENUE.height * view.scale) / 2;
+  applyView();
+}
+
+$('zoomIn').addEventListener('click', function () { zoomBy(1.25); });
+$('zoomOut').addEventListener('click', function () { zoomBy(0.8); });
+$('up').addEventListener('click', function () { moveBy(0, MOVE_STEP); });
+$('down').addEventListener('click', function () { moveBy(0, -MOVE_STEP); });
+$('left').addEventListener('click', function () { moveBy(MOVE_STEP, 0); });
+$('right').addEventListener('click', function () { moveBy(-MOVE_STEP, 0); });
+$('reset').addEventListener('click', resetView);
+
+window.addEventListener('resize', function () {
+  clampView();
+  applyView();
+});
+
+
+resetView();
