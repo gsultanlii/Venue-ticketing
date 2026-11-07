@@ -102,3 +102,62 @@ function buildLegend() {
 
 buildLegend();
 buildVenue();
+
+
+let cart = [];
+let inspectedId=null;
+
+function refreshSeat(id) {
+  const s = seats.get(id);
+  const inCart = cart.includes(id);
+  s.el.classList.toggle('unavailable', s.unavailable);
+  s.el.classList.toggle('in-cart', inCart);
+  s.el.classList.toggle('inspected', inspectedId === id && !inCart);
+}
+
+
+function inspect(id) {
+  const previous = inspectedId;
+  inspectedId = id;
+
+  if (previous) refreshSeat(previous);  
+  refreshSeat(id);                       
+  renderDetails();
+}
+
+
+function renderDetails(message) {
+  const box = $('details');
+
+  if (!inspectedId) {
+    box.innerHTML = '<p class="muted">Pick a seat on the map to preview its ticket.</p>';
+    return;
+  }
+
+  const s = seats.get(inspectedId);
+  const inCart = cart.includes(s.id);
+
+  let status = 'Available';
+  if (s.unavailable) status = 'Unavailable';
+  else if (inCart) status = 'In your cart';
+
+  let buttonText = 'ADD TO CART';
+  if (s.unavailable) buttonText = 'Seat unavailable';
+  else if (inCart) buttonText = 'Already in cart';
+
+  box.innerHTML =
+    '<div class="detail-row"><span>Section</span><span>' + s.section + '</span></div>' +
+    '<div class="detail-row"><span>Row / Seat</span><span>' + s.row + ' / ' + s.number + '</span></div>' +
+    '<div class="detail-row"><span>Category</span><span>' + VENUE.categories[s.cat].name + '</span></div>' +
+    '<div class="detail-row"><span>Price</span><span>' + s.price + ' ₼</span></div>' +
+    '<div class="detail-row"><span>Status</span><span>' + status + '</span></div>' +
+    '<button class="btn" id="addBtn"' + (s.unavailable || inCart ? ' disabled' : '') + '>' +
+      buttonText + '</button>' +
+    (message ? '<p class="msg">' + message + '</p>' : '');
+}
+
+
+$('world').addEventListener('click', function (e) {
+  const btn = e.target.closest('.seat');
+  if (btn) inspect(btn.dataset.id);
+});
