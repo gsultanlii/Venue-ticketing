@@ -1,0 +1,456 @@
+:root {
+  --bg: #b4b4b8;            /* səhifənin fonu: orta ton boz */
+  --card: #ffffff;          /* panellərin fonu */
+  --line: #d8d8dc;          /* xətlər */
+  --text: #26262b;          /* panellərdəki əsas yazı */
+  --muted: #75757c;         /* solğun yazı */
+
+  --accent: #e8734a;        /* narıncı: ADD TO CART, səbətdəki oturacaq */
+  --wine: #8c2a45;          /* şərab rəngi: panel başlıqları */
+  --gold: #d9a441;          /* qızılı: başlıq, kənarlar */
+
+  --curtain-1: #4a0d1c;     /* pərdə zolaqları (tünd şərab) */
+  --curtain-2: #6b1628;
+  --curtain-3: #5a1122;
+
+  --map-bg: #f4f3f1;        /* xəritənin fonu */
+  --inspect: #ffffff;       /* baxılan oturacaq */
+  --cart: #e8734a;          /* səbətdəki oturacaq */
+  --unavail: #9d9da3;       /* satılmış oturacaq */
+}
+
+/* =========================================
+   2. ÜMUMİ QAYDALAR
+   ========================================= */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-family: Georgia, serif;
+  font-size: 1.1rem;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0;
+}
+
+/* =========================================
+   3. BAŞLIQ (tünd qırmızı pərdə)
+   ========================================= */
+.curtain {
+  position: relative;
+  margin-bottom: 22px;
+  padding: 18px 24px 20px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 28px;
+
+  /* pərdə zolaqları */
+  background: repeating-linear-gradient(
+    90deg,
+    var(--curtain-1) 0 26px,
+    var(--curtain-2) 26px 52px,
+    var(--curtain-3) 52px 78px
+  );
+  border-bottom: 3px solid var(--gold);
+  box-shadow: inset 0 -30px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* pərdənin aşağı dalğalı kənarı */
+.curtain::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -17px;
+  height: 14px;
+  background: radial-gradient(circle at 18px 0, var(--curtain-3) 17px, transparent 18px)
+    0 0 / 36px 14px repeat-x;
+}
+
+.house {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #f0cf8f;
+  letter-spacing: 0.08em;
+}
+
+h1 {
+  margin: 2px 0;
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-size: 2.2rem;
+  font-style: italic;
+  color: var(--gold);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.showtime {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #f3dfc0;
+}
+
+/* =========================================
+   4. LEGEND (rəng izahı)
+   ========================================= */
+.legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: #f3e6d0;
+  background: rgba(20, 8, 14, 0.5);
+  border-radius: 8px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+/* =========================================
+   5. ƏSAS DÜZÜLÜŞ (solda xəritə, sağda panellər)
+   ========================================= */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;   /* sol: qalan yer, sağ: 340px */
+  gap: 20px;
+  padding: 0 20px 20px;
+}
+
+/* =========================================
+   6. XƏRİTƏ
+   ========================================= */
+.map-wrap {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--map-bg);
+  box-shadow: 0 4px 14px rgba(60, 40, 100, 0.15);
+}
+
+.viewport {
+  height: calc(100vh - 190px);
+  min-height: 420px;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  position: relative;
+}
+
+.viewport.dragging {
+  cursor: grabbing;
+}
+
+/* zalın özü: zoom və hərəkət bu elementə tətbiq olunur */
+.world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.hint {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* səhnə */
+.stage {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(#f3e3c4, #ead5a6);
+  border: 2px solid var(--gold);
+  border-radius: 6px 6px 40px 40px;
+  color: #7a5a14;
+  letter-spacing: 0.3em;
+  font-size: 0.9rem;
+}
+
+/* bölmə adları (məs: "Balcony · 45 ₼") */
+.label {
+  position: absolute;
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* =========================================
+   7. OTURACAQLAR VƏ VƏZİYYƏTLƏRİ
+   ========================================= */
+.seat {
+  position: absolute;
+  border: 2px solid transparent;
+  border-radius: 6px 6px 3px 3px;
+  padding: 0;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #10121a;
+  background: var(--c);     /* rəng JS tərəfindən kateqoriyaya görə verilir */
+  cursor: pointer;
+}
+
+.seat:hover {
+  filter: brightness(0.92);
+}
+
+.seat:focus-visible {
+  outline: 2px solid var(--wine);
+  outline-offset: 2px;
+}
+
+/* baxılan (seçilmiş) oturacaq */
+.seat.inspected {
+  background: var(--inspect);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232, 115, 74, 0.45);
+}
+
+/* səbətdəki oturacaq */
+.seat.in-cart {
+  background: var(--cart);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* satılmış oturacaq */
+.seat.unavailable {
+  background: var(--unavail);
+  color: #6e7186;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* =========================================
+   8. XƏRİTƏ DÜYMƏLƏRİ (zoom və hərəkət)
+   ========================================= */
+.controls {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 42px);
+  gap: 4px;
+}
+
+.controls button {
+  height: 42px;
+  border: 1px solid var(--gold);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--wine);
+  border-radius: 8px;
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background: #f6ecd8;
+}
+
+/* düymələrin yeri (3 sütun x 3 sıra):
+        [ + ] [ ↑ ] [ − ]
+        [ ← ] [ ⟲ ] [ → ]
+              [ ↓ ]          */
+#zoomIn  { grid-column: 1; grid-row: 1; }
+#up      { grid-column: 2; grid-row: 1; }
+#zoomOut { grid-column: 3; grid-row: 1; }
+#left    { grid-column: 1; grid-row: 2; }
+#reset   { grid-column: 2; grid-row: 2; }
+#right   { grid-column: 3; grid-row: 2; }
+#down    { grid-column: 2; grid-row: 3; }
+
+/* =========================================
+   9. SAĞ SÜTUN
+   ========================================= */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ---- Bilet paneli (oturacaq detalları) ---- */
+.ticket {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px 18px;
+  box-shadow: 0 4px 14px rgba(60, 40, 100, 0.15);
+}
+
+.ticket h2 {
+  line-height: 24px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  color: var(--wine);
+  border-bottom: 2px dashed var(--line);
+}
+
+/* biletin yanlarındakı yarım dairələr (fonla eyni rəngdə) */
+.ticket::before,
+.ticket::after {
+  content: "";
+  position: absolute;
+  top: 43px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+
+.ticket::before { left: -9px; }
+.ticket::after  { right: -9px; }
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px dotted var(--line);
+  font-size: 0.92rem;
+}
+
+.detail-row span:first-child {
+  color: var(--muted);
+}
+
+/* ADD TO CART düyməsi */
+.btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.btn:disabled {
+  background: #d6d2e2;
+  color: #8a85a3;
+  cursor: not-allowed;
+}
+
+.msg {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: #b0501f;
+}
+
+/* ---- Səbət paneli ---- */
+.stub {
+  background: var(--card);
+  border: 2px dashed var(--gold);
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 14px rgba(60, 40, 100, 0.15);
+}
+
+.stub h2 {
+  color: var(--wine);
+}
+
+.cart {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.cart li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.cart li div {
+  flex: 1;
+}
+
+.cart small {
+  display: block;
+  color: var(--muted);
+}
+
+.cart button {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.cart button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1rem;
+  margin: 10px 0;
+  padding-top: 10px;
+  border-top: 2px dashed var(--line);
+}
+
+.total strong {
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  color: var(--wine);
+}
+
+.ghost {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.ghost:hover {
+  border-color: var(--wine);
+  color: var(--wine);
+}
