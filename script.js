@@ -233,6 +233,7 @@ resetView();
 
 
 function cartChanged() {
+  saveCart();
   renderCart();
 }
 
@@ -313,3 +314,36 @@ $('details').addEventListener('click', function (e) {
 $('clear').addEventListener('click', clearCart);
 
 renderCart();
+
+
+
+const STORAGE_KEY = 'venueCart_v1';
+
+function saveCart() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+  } catch (err) {
+    console.warn('Cart could not be saved:', err);
+  }
+}
+
+function loadCart() {
+  let saved = [];
+
+  try {
+    saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch (err) {
+    saved = [];   
+  }
+
+  cart = saved.filter(function (id, index) {
+    return seats.has(id) &&
+           !seats.get(id).unavailable &&
+           saved.indexOf(id) === index;
+  });
+
+  cart.forEach(refreshSeat); 
+  renderCart();                
+}
+
+loadCart();
