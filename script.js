@@ -230,3 +230,86 @@ window.addEventListener('resize', function () {
 
 
 resetView();
+
+
+function cartChanged() {
+  renderCart();
+}
+
+function addToCart() {
+  if (!inspectedId) return;
+  const s = seats.get(inspectedId);
+
+  if (s.unavailable) {
+    renderDetails('This seat is not available.');
+    return;
+  }
+
+  if (cart.includes(s.id)) {
+    renderDetails('This seat is already in your cart.');
+    return;
+  }
+
+  cart.push(s.id);
+  refreshSeat(s.id);     
+  cartChanged();
+  renderDetails();       
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(function (x) { return x !== id; });
+  refreshSeat(id);     
+  cartChanged();
+  if (inspectedId) renderDetails();
+}
+
+function clearCart() {
+  const old = cart.slice();
+  cart = [];
+  old.forEach(refreshSeat);
+  cartChanged();
+  if (inspectedId) renderDetails();
+}
+
+function renderCart() {
+  const list = $('cart');
+  list.innerHTML = '';
+
+  if (cart.length === 0) {
+    list.innerHTML = '<li class="muted">Your cart is empty.</li>';
+  }
+
+  let total = 0;
+
+  cart.forEach(function (id) {
+    const s = seats.get(id);
+    total += s.price;
+
+    const li = document.createElement('li');
+    li.innerHTML =
+      '<div>' + s.section +
+      '<small>Row ' + s.row + ', seat ' + s.number + ' · ' +
+      VENUE.categories[s.cat].name + '</small></div>' +
+      '<strong>' + s.price + ' ₼</strong>';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Remove';
+    btn.setAttribute('aria-label',
+      'Remove ' + s.section + ' row ' + s.row + ' seat ' + s.number);
+    btn.addEventListener('click', function () { removeFromCart(id); });
+
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+
+  $('total').textContent = total + ' ₼';
+}
+
+$('details').addEventListener('click', function (e) {
+  if (e.target.id === 'addBtn') addToCart();
+});
+
+$('clear').addEventListener('click', clearCart);
+
+renderCart();
