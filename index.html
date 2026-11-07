@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Azərbaycan Dövlət Akademik Opera və Balet Teatrı-  Choose your seats</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="curtain">
+  <div class="marquee">
+    <p class="house">Azərbaycan Dövlət Akademik Opera və Balet Teatrı</p>
+    <h1>Leyli və Məcnun</h1>
+    <p class="showtime">Evening performance · 19:00 · Main hall</p>
+  </div>
+  <ul class="legend" id="legend" aria-label="Seat legend"></ul>
+</header>
+
+<main class="layout">
+  <section class="map-wrap" aria-label="Venue map">
+    <div class="viewport" id="viewport"><div class="world" id="world"></div></div>
+    <p class="hint">Scroll to zoom · drag to move</p>
+    <div class="controls" role="group" aria-label="Map controls">
+      <button id="zoomIn" aria-label="Zoom in">+</button>
+      <button id="zoomOut" aria-label="Zoom out">−</button>
+      <button id="up" aria-label="Move up">↑</button>
+      <button id="left" aria-label="Move left">←</button>
+      <button id="reset" aria-label="Reset and center view">⟲</button>
+      <button id="right" aria-label="Move right">→</button>
+      <button id="down" aria-label="Move down">↓</button>
+    </div>
+  </section>
+
+  <aside class="side">
+    <section class="ticket" aria-live="polite">
+      <h2>Your seat</h2>
+      <div id="details"><p class="muted">Pick a seat on the map to preview its ticket.</p></div>
+    </section>
+
+    <section class="stub">
+      <h2>Ticket cart</h2>
+      <ul id="cart" class="cart"></ul>
+      <p class="total">Total <strong id="total">0 ₼</strong></p>
+      <button id="clear" class="ghost">Clear cart</button>
+    </section>
+  </aside>
+</main>
+
+<script src="venue-data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
