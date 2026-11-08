@@ -509,3 +509,16 @@ h1 {
     flex: none;
   }
 }
+
+
+/* sira herfleri (A, B, C...) */
+.rowlabel {
+  position: absolute;
+  width: 16px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--muted);
+  pointer-events: none;
+}

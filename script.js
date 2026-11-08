@@ -34,9 +34,14 @@ function buildVenue() {
 
   
     for (let r = 0; r < sec.rows; r++) {
-      const rowLetter = String.fromCharCode(65 + r);   
+      const rowLetter = String.fromCharCode(65 + r);   // 65= 'A'
 
-    
+      const rowTag = document.createElement('div');
+      rowTag.className = 'rowlabel';
+      rowTag.textContent = rowLetter;
+      rowTag.style.left = (sec.x - 20) + 'px';
+      rowTag.style.top = (sec.y + r * pitch) + 'px';
+      world.appendChild(rowTag)
       for (let c = 0; c < sec.cols; c++) {
         const id = sec.id + '-' + rowLetter + (c + 1);   
 
