@@ -27,6 +27,7 @@ function buildVenue() {
 
     const label = document.createElement('div');
     label.className = 'label';
+    label.dataset.section = sec.id;
     label.textContent = sec.name + ' · ' + cat.price + ' ₼';
     label.style.left = sec.x + 'px';
     label.style.top = (sec.y - 22) + 'px';
@@ -240,6 +241,7 @@ resetView();
 function cartChanged() {
   saveCart();
   renderCart();
+  updateFreeCounts();
 }
 
 function addToCart() {
@@ -419,3 +421,28 @@ viewport.addEventListener('click', function (e) {
     e.preventDefault();
   }
 }, true);
+
+
+
+// =========================================
+//  BOLMELERDE BOS OTURACAQ SAYI
+// =========================================
+function updateFreeCounts() {
+  VENUE.sections.forEach(function (sec) {
+    const cat = VENUE.categories[sec.cat];
+    let free = 0;
+
+    seats.forEach(function (s) {
+      if (s.section === sec.name && !s.unavailable && !cart.includes(s.id)) {
+        free++;
+      }
+    });
+
+    const label = document.querySelector('.label[data-section="' + sec.id + '"]');
+    if (label) {
+      label.textContent = sec.name + ' · ' + cat.price + ' ₼ · ' + free + ' free';
+    }
+  });
+}
+
+updateFreeCounts();
