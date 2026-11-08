@@ -347,3 +347,70 @@ function loadCart() {
 }
 
 loadCart();
+
+
+
+// =========================================
+// 9. BONUS:
+// =========================================
+
+function zoomAtPoint(factor, px, py) {
+  const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, view.scale * factor));
+  const k = newScale / view.scale;
+
+  view.x = px - (px - view.x) * k;
+  view.y = py - (py - view.y) * k;
+  view.scale = newScale;
+
+  clampView();
+  applyView();
+}
+
+viewport.addEventListener('wheel', function (e) {
+  e.preventDefault(); 
+
+  const rect = viewport.getBoundingClientRect();
+  const px = e.clientX - rect.left;
+  const py = e.clientY - rect.top;
+
+  zoomAtPoint(e.deltaY < 0 ? 1.1 : 1 / 1.1, px, py);
+}, { passive: false });
+
+let drag = null;            
+let justDragged = false;    
+
+viewport.addEventListener('pointerdown', function (e) {
+  if (e.button !== 0) return; 
+  drag = { x: e.clientX, y: e.clientY, moved: false };
+});
+
+window.addEventListener('pointermove', function (e) {
+  if (!drag) return;
+
+  const dx = e.clientX - drag.x;
+  const dy = e.clientY - drag.y;
+
+  if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+
+  drag.moved = true;
+  viewport.classList.add('dragging');
+  drag.x = e.clientX;
+  drag.y = e.clientY;
+  moveBy(dx, dy);
+});
+
+window.addEventListener('pointerup', function () {
+  if (drag && drag.moved) {
+    justDragged = true;
+    setTimeout(function () { justDragged = false; }, 0);
+  }
+  drag = null;
+  viewport.classList.remove('dragging');
+});
+
+viewport.addEventListener('click', function (e) {
+  if (justDragged) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+}, true);
