@@ -142,14 +142,17 @@ function renderDetails(message) {
 
   const s = seats.get(inspectedId);
   const inCart = cart.includes(s.id);
+  const cartFull = cart.length >= MAX_TICKETS && !inCart;
 
   let status = 'Available';
   if (s.unavailable) status = 'Unavailable';
   else if (inCart) status = 'In your cart';
 
+
   let buttonText = 'ADD TO CART';
   if (s.unavailable) buttonText = 'Seat unavailable';
   else if (inCart) buttonText = 'Already in cart';
+  else if (cartFull) buttonText = 'Cart is full (max ' + MAX_TICKETS + ')';
 
   box.innerHTML =
     '<div class="detail-row"><span>Section</span><span>' + s.section + '</span></div>' +
@@ -157,7 +160,7 @@ function renderDetails(message) {
     '<div class="detail-row"><span>Category</span><span>' + VENUE.categories[s.cat].name + '</span></div>' +
     '<div class="detail-row"><span>Price</span><span>' + s.price + ' ₼</span></div>' +
     '<div class="detail-row"><span>Status</span><span>' + status + '</span></div>' +
-    '<button class="btn" id="addBtn"' + (s.unavailable || inCart ? ' disabled' : '') + '>' +
+    '<button class="btn" id="addBtn"' + (s.unavailable || inCart || cartFull ? ' disabled' : '') + '>' +
       buttonText + '</button>' +
     (message ? '<p class="msg">' + message + '</p>' : '');
 }
@@ -237,7 +240,7 @@ window.addEventListener('resize', function () {
 
 resetView();
 
-
+const MAX_TICKETS = 5;
 function cartChanged() {
   saveCart();
   renderCart();
@@ -257,7 +260,12 @@ function addToCart() {
     renderDetails('This seat is already in your cart.');
     return;
   }
-
+  
+  // Sebet limiti
+  if (cart.length >= MAX_TICKETS) {
+    renderDetails('You can add up to ' + MAX_TICKETS + ' tickets per order.');
+    return;
+  }
   cart.push(s.id);
   refreshSeat(s.id);     
   cartChanged();
@@ -347,7 +355,7 @@ function loadCart() {
     return seats.has(id) &&
            !seats.get(id).unavailable &&
            saved.indexOf(id) === index;
-  });
+  }).slice(0, MAX_TICKETS);
 
   cart.forEach(refreshSeat); 
   renderCart();                
